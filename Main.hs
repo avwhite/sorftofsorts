@@ -7,6 +7,12 @@ data Operation = Operation Stack Stack deriving Show
 data SortStacks = SortStacks [Int] [Int] [Int] deriving Show 
 data TNum = N Int | Top deriving (Show, Eq)
 
+instance Ord TNum where
+    Top <= Top = True 
+    x <= Top = True
+    Top <= x = False
+    N x <= N y = x <= y 
+
 --start = SortStacks [12, 3, 4, 11, 2, 14, 6] [7, 8, 5] [9, 13, 1, 10]
 --start = SortStacks [3, 4, 6, 1] [5] []
 start = SortStacks [2, 3, 4] [1] []
@@ -54,11 +60,6 @@ applyOperation (Operation C _) (SortStacks _ _ []) = Nothing
 
 applyOperation _ _ = Nothing -- Operations moveing from x to x
 
-(<:) :: TNum -> TNum -> Bool
-Top <: _ = False 
-_ <: Top = True 
-(N a) <: (N b) = a < b
-
 forwards = Operation C A
 backwards = Operation A C
 storeL = Operation A B
@@ -69,14 +70,14 @@ step :: (TNum, TNum, TNum) -> Operation
 -- sad grab
 step (_, Top, Top) = storeL
 -- seek forward
-step (l, Top , r) | r <: l = forwards
+step (l, Top , r) | r < l = forwards
 -- grab
-step (l, Top , r) | l <: r = storeR
+step (l, Top , r) | l < r = storeR
 -- sad put
 step (Top, x, r) = popL
 -- seek backwards
-step (l, x, r) | l <: x = backwards
+step (l, x, r) | l < x = backwards
 -- sad seek backwards
-step (l, x, r) | x <: l && x <: r = backwards
+step (l, x, r) | x < l && x < r = backwards
 -- put
-step (l, x, r) | x <: l && r <: x = popL
+step (l, x, r) | x < l && r < x = popL
