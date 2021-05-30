@@ -67,17 +67,12 @@ storeR = Operation C B
 popL = Operation B A
 
 step :: (TNum, TNum, TNum) -> Operation 
--- sad grab
-step (_, Top, Top) = storeL
--- seek forward
-step (l, Top , r) | r < l = forwards
--- grab
-step (l, Top , r) | l < r = storeR
--- sad put
-step (Top, x, r) = popL
--- seek backwards
-step (l, x, r) | l < x = backwards
--- sad seek backwards
-step (l, x, r) | x < l && x < r = backwards
--- put
-step (l, x, r) | x < l && r < x = popL
+-- Seek forward and grab out of place element
+step (l, Top, Top)       = storeL   --Grab (from left) if we are at end instead
+step (l, Top, r  ) | r < l = forwards --Go forwards when elements are en correct order
+step (l, Top, r  ) | l < r = storeR   --Grab from right when they are not
+-- Seek backwards and place element in correct place
+step (l,   x, r) | l < x          = backwards --Seek backwards while l < x
+step (Top, x, r)                  = popL      --Put if we are at end no matter what
+step (l,   x, r) | x < l && x < r = backwards --The tricky case, we go back further instead of putting the element in its correct place
+step (l,   x, r) | x < l && r < x = popL      --Put the element in its place
